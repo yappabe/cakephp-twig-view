@@ -1,7 +1,7 @@
 <?php
 /**
  * TwigView for CakePHP
- * 
+ *
  * @version 0.8.0
  * @package app.views
  * @subpackage app.views.twig
@@ -25,14 +25,14 @@ App::import('View', 'Theme');
 App::import('Lib', 'Twig.TwigExtension');
 
 /**
- * TwigView Class 
+ * TwigView Class
  *
  * @package app.views
  * @subpackage app.views.twig
  * @author Kjell Bublitz <m3nt0r.de@gmail.com>
  */
 class TwigView extends ThemeView {
-	
+
 	/**
 	 * Default Options
 	 *
@@ -47,15 +47,15 @@ class TwigView extends ThemeView {
 			'time'
 		)
 	);
-	
+
 	/**
 	 * filename => className
-	 * 
+	 *
 	 * @see TwigView::registerExtension()
 	 * @var array
 	 */
 	static private $__extensionExports = array();
-	
+
 	/**
 	 * Constructor
 	 *
@@ -67,21 +67,21 @@ class TwigView extends ThemeView {
 		parent::__construct($controller, $register);
 		$this->twigPluginPath = dirname(dirname(__FILE__)) . DS;
 		$this->twigExtensionPath = $this->twigPluginPath . 'extensions';
-		
+
 		// import page title, if assigned the old way
 		if (isset($controller->pageTitle)) {
 			$this->pageTitle = $controller->pageTitle;
 		}
-		
+
 		// import plugin options
 		$appOptions = Configure::read('TwigView');
 		if (!empty($appOptions) && is_array($appOptions)) {
 			$this->twigOptions = array_merge($this->twigOptions, $appOptions);
 		}
-		
+
 		// set preferred extension
 		$this->ext = $this->twigOptions['fileExtension'];
-		
+
 		// Setup template paths
 		$pluginFolder = Inflector::underscore($this->plugin);
 		$paths = $this->_paths($pluginFolder);
@@ -89,7 +89,7 @@ class TwigView extends ThemeView {
 			// Make "{% include 'test.ctp' %}" a replacement for self::element()
 			$paths[] = $path . 'elements' . DS;
 		}
-		
+
 		// check if all paths really exist. unfortunately Twig_Loader_Filesystem does an is_dir() for each path
 		// while CakePHP just assumes you know what you are doing.
 		foreach ($paths as $i => $path) {
@@ -98,18 +98,18 @@ class TwigView extends ThemeView {
 				continue; // skip
 			}
 		}
-		
+
 		// Setup Twig Environment
 		$loader = new Twig_Loader_Filesystem($paths);
 		$this->Twig = new Twig_Environment($loader, array(
-			'cache' => false, // use cakephp cache
+            'cache' => false, // use cakephp cache
 			'debug' => (Configure::read() > 0),
 		));
-		
+
 		// Do not escape return values (from helpers)
 		$escaper = new Twig_Extension_Escaper(false);
 		$this->Twig->addExtension($escaper);
-		
+
 		// Add custom TwigView Extensions
 		$this->twigLoadedExtensions = array();
 		foreach ($this->twigOptions['extensions'] as $extensionName) {
@@ -118,7 +118,7 @@ class TwigView extends ThemeView {
 			}
 		}
 	}
-	
+
 	/**
 	 * Renders and returns output for given view filename with its
 	 * array of data.
@@ -131,10 +131,10 @@ class TwigView extends ThemeView {
 	 * @access protected
 	 */
 	function _render($___viewFn, $___dataForView, $loadHelpers = true, $cached = false) {
-		
+
 		$___filename = basename($___viewFn);
 		$___extension = '.' . array_pop(explode('.', $___filename));
-				
+
 		$loadedHelpers = array();
 		if ($this->helpers != false && $loadHelpers === true) {
 			$loadedHelpers = $this->_loadHelpers($loadedHelpers, $this->helpers);
@@ -157,19 +157,25 @@ class TwigView extends ThemeView {
 		if ($___extension == $this->twigOptions['fileExtension']) {
 			ob_start();
 			try {
-				// get relative-to-loader path
-				$___relativeFn = basename(dirname($___viewFn)). DS . $___filename;
-			
+                if (strpos($___viewFn, '/') === 0) {
+                    // When an absolute path is given, add the root path to
+                    $___relativeFn = substr($___viewFn, 1);
+                    $this->Twig->getLoader()->prependPath('/');
+                } else {
+                    // get relative-to-loader path
+                    $___relativeFn = basename(dirname($___viewFn)) . DS . basename($___filename);
+                }
+
 				// load helpers
 				if ($this->helpers != false && $loadHelpers === true) {
-					// Expose helpers the "cakephp 1.2" way: 
+					// Expose helpers the "cakephp 1.2" way:
 					foreach($this->loaded as $name => $helper) {
 						$this->Twig->addGlobal($name, $helper);
 					}
 				}
-				
+
 				echo $this->Twig->render($___relativeFn, $___dataForView);
-			} 
+			}
 			catch(Exception $e) {
 				echo '<pre><h2>Twig Error</h2>'.htmlentities($e->getMessage()).'</pre>';
 			}
@@ -177,7 +183,7 @@ class TwigView extends ThemeView {
 			if (!isset($___dataForView['cakeDebug'])) {
 				$___dataForView['cakeDebug'] = null;
 			}
-			
+
 			extract($___dataForView, EXTR_SKIP);
 			ob_start();
 			if ((Configure::read() > 0)) {
@@ -186,7 +192,7 @@ class TwigView extends ThemeView {
 				@include ($___viewFn);
 			}
 		}
-		
+
 		if ($loadHelpers === true) {
 			$this->_triggerHelpers('afterRender');
 		}
@@ -213,7 +219,7 @@ class TwigView extends ThemeView {
 		}
 		return $out;
 	}
-	
+
 	/**
 	 * Renders a piece of PHP with provided parameters and returns HTML, XML, or any other string.
 	 *
@@ -265,31 +271,32 @@ class TwigView extends ThemeView {
 			}
 		}
 		$paths = $this->_paths($plugin);
-		$exts = array($this->ext, '.ctp', '.thtml');
-		foreach ($exts as $ext) {
-			foreach ($paths as $path) {
-				if (file_exists($path . 'elements' . DS . $name . $ext)) {
-					$file = $path . 'elements' . DS . $name . $ext;
-					break 2;
-				}
-			}
-		}
 
-		if (is_file($file)) {
-			$params = array_merge_recursive($params, $this->loaded);
-			$element = $this->_render($file, array_merge($this->viewVars, $params), $loadHelpers);
-			if (isset($params['cache']) && isset($cacheFile) && isset($expires)) {
-				cache('views' . DS . $cacheFile, $element, $expires);
-			}
-			return $element;
-		}
-		$file = $paths[0] . 'elements' . DS . $name . $this->ext;
+        $exts = array($this->ext, '.ctp', '.thtml');
+        foreach ($exts as $ext) {
+            foreach ($paths as $path) {
+                if (file_exists($path . 'elements' . DS . $name . $ext)) {
+                    $file = $path . 'elements' . DS . $name . $ext;
+                    break 2;
+                }
+            }
+        }
+
+        if (is_file($file)) {
+            $params = array_merge_recursive($params, $this->loaded);
+            $element = $this->_render($file, array_merge($this->viewVars, $params), $loadHelpers);
+            if (isset($params['cache']) && isset($cacheFile) && isset($expires)) {
+                cache('views' . DS . $cacheFile, $element, $expires);
+            }
+            return $element;
+        }
+        $file = $paths[0] . 'elements' . DS . $name . $this->ext;
 
 		if (Configure::read() > 0) {
 			return "Not Found: " . $file;
 		}
 	}
-	
+
 	/**
 	 * Require filter set once, add filter name to self::twigLoadedFilters
 	 *
@@ -303,25 +310,25 @@ class TwigView extends ThemeView {
 		if (in_array($extensionName, $this->twigLoadedExtensions)) {
 			return false; // already loaded
 		}
-		
+
 		$filename = $extensionName .'.php';
 		$filepath = $this->twigExtensionPath . DS . $filename;
-		
+
 		if (!is_file($filepath)) {
 			trigger_error("TwigExtension file not found: {$extensionName} (looked in: {$this->twigExtensionPath})", E_USER_ERROR);
 			return false;
 		}
 		require_once $filepath;
-		
+
 		if (empty(self::$__extensionExports[$filename])) {
 			trigger_error("TwigExtension '{$extensionName}' does not export a extension class (did you call registerExtension?).", E_USER_ERROR);
 			return false;
 		}
-		
+
 		$this->twigLoadedExtensions[] = $extensionName;
 		return self::$__extensionExports[$filename];
 	}
-	
+
 	/**
 	 * Register Extension Class Name for loading
 	 *
