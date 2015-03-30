@@ -65,30 +65,26 @@ class TwigView extends ThemeView {
 	 */
 	function __construct(&$controller, $register = true) {
 		parent::__construct($controller, $register);
-		$this->twigPluginPath = dirname(dirname(__FILE__)) . DS;
-		$this->twigExtensionPath = $this->twigPluginPath . 'extensions';
 
-		// import page title, if assigned the old way
-		if (isset($controller->pageTitle)) {
-			$this->pageTitle = $controller->pageTitle;
-		}
+        // import page title, if assigned the old way
+        if (isset($controller->pageTitle)) {
+            $this->pageTitle = $controller->pageTitle;
+        }
 
-		// import plugin options
-		$appOptions = Configure::read('TwigView');
-		if (!empty($appOptions) && is_array($appOptions)) {
-			$this->twigOptions = array_merge($this->twigOptions, $appOptions);
-		}
+        // import plugin options
+        $appOptions = Configure::read('TwigView');
+        if (!empty($appOptions) && is_array($appOptions)) {
+            $this->twigOptions = array_merge($this->twigOptions, $appOptions);
+        }
 
         if (array_key_exists('extension_path', $appOptions)) {
-            $defaultExtensionPath = $this->twigExtensionPath;
-            $this->twigExtensionPath = array();
-
-            foreach ($appOptions['extension_path'] as $extensionPath) {
-                $this->twigExtensionPath[] = $extensionPath;
-            }
-
-            $this->twigExtensionPath[] = $defaultExtensionPath;
+            // Add custom extension paths
+            $this->addExtensionPath($appOptions['extension_path']);
         }
+
+        // Add default extension path
+        $this->addExtensionPath(dirname(dirname(__FILE__)) . DS . 'extensions');
+
 		// set preferred extension
 		$this->ext = $this->twigOptions['fileExtension'];
 
@@ -322,29 +318,12 @@ class TwigView extends ThemeView {
 		}
 
 		$filename = $extensionName .'.php';
-        $filepath = '';
+        $filepath = $this->getPathForExtension($filename);
 
-        if (is_array($this->twigExtensionPath)) {
-            foreach ($this->twigExtensionPath as $path) {
-                $filepath = $path . DS . $filename;
-                if (!is_file($filepath)) {
-                    $notFound[] = $path;
-                } else {
-                    break;
-                }
-            }
-
-            if (count($notFound) == count($this->twigExtensionPath)) {
-                $tmpPaths = implode(',', $notFound);
-                trigger_error("TwigExtension file not found: {$extensionName} (looked in: {$tmpPaths})", E_USER_ERROR);
-                return false;
-            }
-        } else {
-            $filepath = $this->twigExtensionPath . DS . $filename;
-            if (!is_file($filepath)) {
-                trigger_error("TwigExtension file not found: {$extensionName} (looked in: {$this->twigExtensionPath})", E_USER_ERROR);
-                return false;
-            }
+        if (!$filepath) {
+            $extensionPaths = implode(',', $this->getExtensionPaths());
+            trigger_error("TwigExtension file not found: {$extensionName} (looked in: {$extensionPaths})", E_USER_ERROR);
+            return false;
         }
 
 		require_once $filepath;
@@ -357,6 +336,59 @@ class TwigView extends ThemeView {
 		$this->twigLoadedExtensions[] = $extensionName;
 		return self::$__extensionExports[$filename];
 	}
+
+    /**
+     * Get full path for extension
+     *
+     * @param  string $filename File name
+     *
+     * @return mixed False if extension is not found, otherwise returns full path.
+     */
+    public function getPathForExtension($filename)
+    {
+        if (!$filename) {
+            return false;
+        }
+
+        foreach ($this->twigExtensionPaths as $path) {
+            $filepath = $path . DS . $filename;
+            if (is_file($filepath)) {
+                return $filepath;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Add a path to look for extensions
+     *
+     * @param mixed $paths Array or string to absolute paths to extensions
+     */
+    public function addExtensionPath($paths)
+    {
+        if (is_array($paths)) {
+            foreach ($paths as $path) {
+                if (file_exists($path)) {
+                    $this->twigExtensionPaths[] = $path;
+                }
+            }
+        } else {
+            if (file_exists($paths)) {
+                $this->twigExtensionPaths[] = $paths;
+            }
+        }
+    }
+
+    /**
+     * Get extention apths
+     *
+     * @return array Returns an array of entention paths.
+     */
+    public function getExtensionPaths()
+    {
+        return $this->twigExtensionPaths;
+    }
 
 	/**
 	 * Register Extension Class Name for loading
