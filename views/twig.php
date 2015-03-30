@@ -79,6 +79,16 @@ class TwigView extends ThemeView {
 			$this->twigOptions = array_merge($this->twigOptions, $appOptions);
 		}
 
+        if (array_key_exists('extension_path', $appOptions)) {
+            $defaultExtensionPath = $this->twigExtensionPath;
+            $this->twigExtensionPath = array();
+
+            foreach ($appOptions['extension_path'] as $extensionPath) {
+                $this->twigExtensionPath[] = $extensionPath;
+            }
+
+            $this->twigExtensionPath[] = $defaultExtensionPath;
+        }
 		// set preferred extension
 		$this->ext = $this->twigOptions['fileExtension'];
 
@@ -312,12 +322,31 @@ class TwigView extends ThemeView {
 		}
 
 		$filename = $extensionName .'.php';
-		$filepath = $this->twigExtensionPath . DS . $filename;
+        $filepath = '';
 
-		if (!is_file($filepath)) {
-			trigger_error("TwigExtension file not found: {$extensionName} (looked in: {$this->twigExtensionPath})", E_USER_ERROR);
-			return false;
-		}
+        if (is_array($this->twigExtensionPath)) {
+            foreach ($this->twigExtensionPath as $path) {
+                $filepath = $path . DS . $filename;
+                if (!is_file($filepath)) {
+                    $notFound[] = $path;
+                } else {
+                    break;
+                }
+            }
+
+            if (count($notFound) == count($this->twigExtensionPath)) {
+                $tmpPaths = implode(',', $notFound);
+                trigger_error("TwigExtension file not found: {$extensionName} (looked in: {$tmpPaths})", E_USER_ERROR);
+                return false;
+            }
+        } else {
+            $filepath = $this->twigExtensionPath . DS . $filename;
+            if (!is_file($filepath)) {
+                trigger_error("TwigExtension file not found: {$extensionName} (looked in: {$this->twigExtensionPath})", E_USER_ERROR);
+                return false;
+            }
+        }
+
 		require_once $filepath;
 
 		if (empty(self::$__extensionExports[$filename])) {
