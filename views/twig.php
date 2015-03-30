@@ -350,7 +350,7 @@ class TwigView extends ThemeView {
             return false;
         }
 
-        foreach ($this->twigExtensionPaths as $path) {
+        foreach ($this->getExtensionPaths() as $path) {
             $filepath = $path . DS . $filename;
             if (is_file($filepath)) {
                 return $filepath;
