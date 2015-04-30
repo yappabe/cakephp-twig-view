@@ -20,7 +20,7 @@ Download the [current version as ZIP](https://github.com/m3nt0r/cakephp-twig-vie
 
 Just clone the repository directly into your `plugins` folder as `twig`.
 
-    $ git clone https://github.com/m3nt0r/cakephp-twig-view.git twig
+    $ git clone https://github.com/yappabe/cakephp-twig-view.git twig
 
 ## Twig Version Support
 
