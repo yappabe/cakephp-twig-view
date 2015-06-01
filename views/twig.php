@@ -112,6 +112,11 @@ class TwigView extends ThemeView {
 			'debug' => (Configure::read() > 0),
 		));
 
+        if (Configure::read() > 0) {
+            $debugger = new Twig_Extension_Debug();
+            $this->Twig->addExtension($debugger);
+        }
+
 		// Do not escape return values (from helpers)
 		$escaper = new Twig_Extension_Escaper(false);
 		$this->Twig->addExtension($escaper);
