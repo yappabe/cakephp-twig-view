@@ -69,12 +69,12 @@ class TwigView_Filter_Text extends TwigView_Extension {
 	 * 
 	 * @param string $var 
 	 * @param integer $length Length of returned string, including ellipsis.
-	 * @param array $options An array of html attributes and options.
+	 * @param string $ending Ending that will be appended (default: '...')
 	 * @return void
 	 * @author Kjell Bublitz
 	 */
-	static function truncate($var, $length = 100, $options = array()) {
-		return self::helperObject('TextHelper')->truncate($var, $length, $options);
+	static function truncate($var, $length = 100, $ending = '...') {
+		return self::helperObject('TextHelper')->truncate($var, $length, $ending);
 	}
 
 	/**
