@@ -66,15 +66,16 @@ class TwigView_Filter_Text extends TwigView_Extension {
 
 	/**
 	 * TextHelper::truncate
-	 * 
-	 * @param string $var 
+	 *
+	 * @param string $var
 	 * @param integer $length Length of returned string, including ellipsis.
 	 * @param string $ending Ending that will be appended (default: '...')
-	 * @return void
+	 * @param bool $exact
+	 * @param bool $considerHtml
 	 * @author Kjell Bublitz
 	 */
-	static function truncate($var, $length = 100, $ending = '...') {
-		return self::helperObject('TextHelper')->truncate($var, $length, $ending);
+	static function truncate($var, $length = 100, $ending = '...', $exact = true, $considerHtml = true) {
+		return self::helperObject('TextHelper')->truncate($var, $length, $ending, $exact, $considerHtml);
 	}
 
 	/**
