@@ -1,10 +1,11 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4638720c6e47185b0ad7ccdc67ae9d79",
+    "hash": "9433bb5f02bb15fbb6a5d7011335ddf3",
+    "content-hash": "c364857a2130687ec265720a68430a46",
     "packages": [
         {
             "name": "twig/extensions",
@@ -121,6 +122,7 @@
     "minimum-stability": "stable",
     "stability-flags": [],
     "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }
