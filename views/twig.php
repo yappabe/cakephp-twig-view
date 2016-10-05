@@ -170,8 +170,8 @@ class TwigView extends ThemeView {
 			try {
                 if (strpos($___viewFn, '/') === 0) {
                     // When an absolute path is given, add the root path to
-                    $___relativeFn = substr($___viewFn, 1);
-                    $this->Twig->getLoader()->prependPath('/');
+                    $___relativeFn =  basename($___filename);;
+                    $this->Twig->getLoader()->prependPath(dirname($___viewFn));
                 } else {
                     // get relative-to-loader path
                     $___relativeFn = basename(dirname($___viewFn)) . DS . basename($___filename);
